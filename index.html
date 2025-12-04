@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FlowStable – Built for Stable.xyz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter",
+        "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #020617 0, #000 55%);
+      color: #e5e7eb;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 480px;
+      padding: 24px 18px 32px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .logo {
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: #f9fafb;
+    }
+
+    .logo span {
+      color: #3b82f6;
+    }
+
+    .tagline {
+      margin-top: 8px;
+      font-size: 0.98rem;
+      color: #9ca3af;
+    }
+
+    .subtext {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+
+    .card-group {
+      margin-top: 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .feature-card {
+      border-radius: 16px;
+      padding: 14px 14px 16px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .feature-card.active {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5);
+    }
+
+    .feature-card.disabled {
+      opacity: 0.5;
+    }
+
+    .feature-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feature-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #f9fafb;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .badge-live {
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.5);
+      color: #4ade80;
+    }
+
+    .badge-soon {
+      background: rgba(15, 23, 42, 0.9);
+      border-style: dashed;
+      border-color: rgba(55, 65, 81, 0.9);
+      color: #9ca3af;
+    }
+
+    .feature-body {
+      font-size: 0.86rem;
+      color: #9ca3af;
+      line-height: 1.45;
+      margin-top: 2px;
+    }
+
+    .feature-footer {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .btn {
+      font-size: 0.86rem;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #f9fafb;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+      border-color: #1d4ed8;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: #4b5563;
+      color: #9ca3af;
+      cursor: default;
+    }
+
+    .btn-ghost span {
+      font-size: 0.78rem;
+    }
+
+    .footer {
+      margin-top: 26px;
+      text-align: center;
+      font-size: 0.78rem;
+      color: #4b5563;
+    }
+
+    @media (min-width: 768px) {
+      .page {
+        max-width: 640px;
+      }
+
+      .header {
+        margin-bottom: 30px;
+      }
+
+      .logo {
+        font-size: 2.8rem;
+      }
+
+      .card-group {
+        gap: 16px;
+      }
+
+      .feature-card {
+        padding: 16px 18px 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="logo">Flow<span>Stable</span></div>
+      <p class="tagline">Built for Stable.xyz</p>
+      <p class="subtext">
+        Bridge testnet liquidity, soon trade spot markets,
+        supply, lend & stake — all on StableChain.
+      </p>
+    </header>
+
+    <section class="card-group">
+
+      <!-- 1. Bridge – LIVE -->
+      <div class="feature-card active">
+        <div class="feature-header">
+          <div class="feature-title">Bridge & Unwrap</div>
+          <span class="badge badge-live">Live</span>
+        </div>
+        <p class="feature-body">
+          Bridge testnet tokens from Sepolia to Stable and unwrap them using the
+          FlowStable bridge. Powered by gUSDT liquidity on StableChain.
+        </p>
+        <div class="feature-footer">
+          <a href="#" class="btn btn-primary">
+            Open bridge
+          </a>
+        </div>
+      </div>
+
+      <!-- 2. Spot Trading – Coming Soon -->
+      <div class="feature-card disabled">
+        <div class="feature-header">
+          <div class="feature-title">Spot Trading (DEX)</div>
+          <span class="badge badge-soon">Coming soon</span>
+        </div>
+        <p class="feature-body">
+          Swap tokens on FlowStable’s AMM DEX with a clean professional UI and
+          StableChain-native liquidity.
+        </p>
+        <div class="feature-footer">
+          <button class="btn btn-ghost" disabled>
+            <span>Launching soon</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. Supply / Lend / Stake – Coming Soon -->
+      <div class="feature-card disabled">
+        <div class="feature-header">
+          <div class="feature-title">Supply, Lend & Stake</div>
+          <span class="badge badge-soon">Coming soon</span>
+        </div>
+        <p class="feature-body">
+          Earn yield through lending markets and staking pools fully optimized
+          for StableChain’s ecosystem.
+        </p>
+        <div class="feature-footer">
+          <button class="btn btn-ghost" disabled>
+            <span>In development</span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <footer class="footer">
+      Built for Stable.xyz
+    </footer>
+  </div>
+</body>
+</html>
