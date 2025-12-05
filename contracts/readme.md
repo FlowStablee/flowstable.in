@@ -1,153 +1,142 @@
-🏭 StableFactory & 🌊 Secure Faucet Contracts
+Here’s a clean **README.md** file for your repository, based on the details you provided:
 
-This repository contains the core smart contracts powering the StableFactory token launchpad and the FlowStable Secure Faucet.
+````markdown
+# 🏭 StableFactory & 🌊 FlowStable Secure Faucet
 
-These contracts are designed for the Stable Testnet (Chain ID: 2201) to allow users to generate custom ERC20 tokens and receive gasless airdrops of gUSDT.
+This repository contains the core smart contracts powering the **StableFactory** token launchpad and the **FlowStable Secure Faucet**.
 
-📂 Contracts Overview
+These contracts are designed for the **Stable Testnet (Chain ID: 2201)** to allow users to generate custom ERC20 tokens and receive gasless airdrops of gUSDT.
 
-1. Token Factory System
+---
 
-Files: LaunchpadToken, TokenFactory
+## 📂 Contracts Overview
+
+### 1. Token Factory System
+**Files:** `LaunchpadToken.sol`, `TokenFactory.sol`  
+
 A factory-pattern architecture that allows users to deploy their own customizable ERC20 tokens with a single transaction.
 
-TokenFactory: The entry point contract. It takes a configuration struct, deploys a new LaunchpadToken, and emits a TokenCreated event for indexing.
+- **TokenFactory**: Entry point contract. Accepts a configuration struct, deploys a new `LaunchpadToken`, and emits a `TokenCreated` event.
+- **LaunchpadToken**: Enhanced ERC20 contract supporting:
+  - **Mintable:** Owner can mint new tokens (if enabled).
+  - **Burnable:** Holders can destroy tokens (if enabled).
+  - **Pausable:** Owner can freeze all transfers (if enabled).
+  - **Supply Management:** Supports Fixed, Capped, and Unlimited supply models.
 
-LaunchpadToken: An enhanced ERC20 contract that supports:
+---
 
-Mintable: Owner can mint new tokens (if enabled).
+### 2. FlowStable Secure Faucet
+**Files:** `FlowStableSecureFaucet.sol`  
 
-Burnable: Holders can destroy tokens (if enabled).
+A security-hardened faucet that dispenses **1 gUSDT** per claim.
 
-Pausable: Owner can freeze all transfers (if enabled).
+- **Mechanism:** Gasless claiming via Meta-Transactions.
+- **Security:** Uses ECDSA signature verification to ensure requests are authorized.
+- **Protections:** Replay protection (Nonces), Chain ID validation, Max Claim limits (5 claims per wallet).
 
-Supply Management: Supports Fixed, Capped, and Unlimited supply models.
+---
 
-2. FlowStable Secure Faucet
+## 🛠️ Technical Specifications
 
-Files: FlowStableSecureFaucet
-A security-hardened faucet that dispenses 1 gUSDT (Native Currency) to users.
+### Token Factory (LaunchpadToken.sol)
+- **Solidity Version:** ^0.8.20
+- **Dependencies:** OpenZeppelin (ERC20, Ownable, Pausable, Burnable)
+- **Functions:**
+  - `mint(address to, uint256 amount)` — Restricted to Owner. Checks `maxSupply` if set.
+  - `pause()` / `unpause()` — Restricted to Owner. Freezes _update logic.
+  - `burn(uint256 value)` — Public. Reduces totalSupply.
 
-Mechanism: Gasless claiming via Meta-Transactions.
+### Secure Faucet (FlowStableSecureFaucet.sol)
+- **Solidity Version:** ^0.8.19
+- **Native Currency:** gUSDT (18 Decimals)
+- **Claim Limit:** 5 claims per wallet
+- **Fund Amount:** 1 gUSDT per claim
 
-Security: Uses ECDSA signature verification to ensure requests are authorized by a backend relayer.
+---
 
-Protections: Includes Replay Protection (Nonces), Chain ID validation, and Max Claim limits.
+## 🔐 Faucet Security & Integration
 
-🛠️ Technical Specifications
-
-Token Factory (LaunchpadToken.sol)
-
-Solidity Version: ^0.8.20
-
-Dependencies: OpenZeppelin (ERC20, Ownable, Pausable, Burnable).
-
-Features:
-
-mint(address to, uint256 amount): Restricted to Owner. Checks maxSupply if set.
-
-pause() / unpause(): Restricted to Owner. Freezes _update logic.
-
-burn(uint256 value): Public. Reduces totalSupply.
-
-Secure Faucet (FlowStableSecureFaucet.sol)
-
-Solidity Version: ^0.8.19
-
-Native Currency: gUSDT (18 Decimals).
-
-Claim Limit: 5 Claims per wallet.
-
-Fund Amount: 1.0 gUSDT per claim.
-
-🔐 Faucet Security & Integration
-
-The Faucet uses an off-chain signing mechanism to prevent bot spam and allow the backend to pay for the gas fees (Gasless Claim).
-
-1. The Hashing Logic
-
-The smart contract verifies the signature against a hash composed of specific parameters. To generate a valid signature on the frontend/backend, follow this structure:
-
-Solidity Logic:
-
+1. **Hashing Logic**
+```solidity
 bytes32 messageHash = keccak256(abi.encodePacked(
     userAddress,
     contractAddress,
     chainId,
     nonce
 ));
+````
 
-
-JavaScript (Ethers v6) Implementation:
-
+```javascript
 const messageHash = ethers.solidityPackedKeccak256(
     ["address", "address", "uint256", "uint256"],
-    [
-        userAddress, 
-        FAUCET_CONTRACT_ADDRESS, 
-        2201, // Stable Testnet Chain ID
-        nonce // Current nonce from contract
-    ]
+    [userAddress, FAUCET_CONTRACT_ADDRESS, 2201, nonce]
 );
-
-// Sign the binary data
 const signature = await signer.signMessage(ethers.getBytes(messageHash));
+```
 
+2. **Interaction Flow**
 
-2. Interaction Flow
+* Frontend fetches `nonces(userAddress)` from contract.
+* User signs hash `(User + Target + ChainID + Nonce)`.
+* Backend validates eligibility.
+* Backend calls `claimGasless(user, signature)` on the contract.
+* Contract verifies signer, increments nonce, and sends 1 gUSDT.
 
-Frontend: Fetches nonces(userAddress) from the contract.
+---
 
-Frontend: User signs the hash of (User + Target + ChainID + Nonce).
+## 🚀 Deployment Instructions
 
-Frontend: Sends signature and userAddress to the Backend API.
+**Prerequisites:**
 
-Backend: Validates eligibility (IP check, captcha, etc.).
+* Node.js & Hardhat/Foundry
+* Wallet with gUSDT for deployment gas
 
-Backend: Calls claimGasless(user, signature) on the contract, paying the gas fee.
+1. **Deploy Factory**
 
-Contract: Verifies signer matches user, increments nonce, and sends 1 gUSDT.
-
-🚀 Deployment Instructions
-
-Prerequisites
-
-Node.js & Hardhat/Foundry
-
-Wallet with gUSDT for deployment gas.
-
-1. Deploy Factory
-
+```solidity
 // Deploy TokenFactory.sol
-// No constructor arguments required
+```
 
+2. **Deploy Faucet**
 
-2. Deploy Faucet
-
+```solidity
 // Deploy FlowStableSecureFaucet.sol
-// Constructor sets msg.sender as owner
+// Owner is set to deployer
+```
 
+After deployment, fund the faucet by sending gUSDT to its address.
 
-After deployment, the owner must fund the Faucet contract by sending gUSDT to its address.
+---
 
-📜 ABI References
+## 📜 ABI References
 
-TokenFactory ABI
+**TokenFactory ABI**
 
+```json
 [
   "function createToken(tuple(string name, string symbol, uint256 initialSupply, uint256 maxSupply, bool isMintable, bool isBurnable, bool isPausable) config) external payable returns (address)",
   "event TokenCreated(address indexed tokenAddress, address indexed owner, string name, string symbol, uint256 initialSupply, string tokenType)"
 ]
+```
 
+**Faucet ABI**
 
-Faucet ABI
-
+```json
 [
   "function claimGasless(address user, bytes memory signature) external",
   "function nonces(address) view returns (uint256)",
   "function claimCount(address) view returns (uint256)",
   "function MAX_CLAIMS() view returns (uint256)"
 ]
+```
 
+---
 
-Powered by FlowStable
+**Powered by FlowStable**
+
+```
+
+This README is structured for **GitHub**, easy to read, and explains both your token factory and faucet clearly.  
+
+If you want, I can also **make a shorter “one-page quickstart” version** for deployers to just copy-paste commands. Do you want me to do that?
+```
