@@ -60,7 +60,6 @@ contract LaunchpadToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable {
     }
 
     // --- BURN LOGIC (FIX: Added Override) ---
-    // Agar user ne Burnable select nahi kiya, to ye functions fail honge
     function burn(uint256 value) public override {
         require(isBurnable, "Burning is disabled");
         super.burn(value);
