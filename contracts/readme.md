@@ -131,9 +131,3 @@ After deployment, fund the faucet by sending gUSDT to its address.
 
 **Powered by FlowStable**
 
-```
-
-This README is structured for **GitHub**, easy to read, and explains both your token factory and faucet clearly.  
-
-If you want, I can also **make a shorter “one-page quickstart” version** for deployers to just copy-paste commands. Do you want me to do that?
-```
