@@ -1,6 +1,3 @@
-Here’s a clean **README.md** file for your repository, based on the details you provided:
-
-````markdown
 # 🏭 StableFactory & 🌊 FlowStable Secure Faucet
 
 This repository contains the core smart contracts powering the **StableFactory** token launchpad and the **FlowStable Secure Faucet**.
