@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FLOWSTABLE :: Fuel</title>
+  <!-- Ethers.js v6 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      /* --- GREEN & BLACK TERMINAL THEME --- */
+      --bg: #050505;       /* Pure Black */
+      --panel: #0a0a0a;    /* Very Dark Grey */
+      --border: #333333;
+      
+      --accent: #00ff9d;   /* Terminal Green */
+      --accent-dim: rgba(0, 255, 157, 0.1);
+      
+      --text-main: #e5e5e5;
+      --text-muted: #888888;
+      --success: #00ff9d;
+      --error: #ff4444;
+      
+      --grid-color: rgba(0, 255, 157, 0.05);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background-color: var(--bg);
+      background-image: 
+        linear-gradient(var(--grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+        radial-gradient(circle at 50% 0%, #112211 0%, transparent 60%);
+      background-size: 30px 30px, 30px 30px, 100% 100%;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding-bottom: 50px;
+      overflow-x: hidden; 
+      width: 100%;
+    }
+
+    /* --- TOAST --- */
+    #toast-container {
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        display: flex; flex-direction: column; gap: 10px;
+        max-width: 90%; 
+    }
+    .toast {
+        background: var(--panel); border: 1px solid var(--accent);
+        border-left: 3px solid var(--accent);
+        padding: 12px 16px; font-size: 0.8rem;
+        color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.9);
+        display: flex; align-items: center; gap: 10px;
+        animation: slideIn 0.3s ease-out; min-width: 260px;
+    }
+    .toast.error { border-color: var(--error); color: var(--error); }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* --- NAVBAR --- */
+    .navbar {
+      width: 100%; max-width: 800px; 
+      padding: 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 40px; border-bottom: 1px solid var(--border);
+      background: rgba(5, 5, 5, 0.9); backdrop-filter: blur(5px);
+      position: sticky; top: 0; z-index: 50;
+    }
+    
+    .logo { 
+      font-size: 1.3rem; font-weight: 800; letter-spacing: -1px; 
+      display: flex; align-items: center; gap: 6px; 
+    }
+    .logo-main { color: #fff; }
+    .logo-suffix { color: var(--accent); }
+    .logo-tag {
+      font-size: 0.6rem; color: var(--bg); 
+      background: var(--accent); 
+      padding: 1px 5px; border-radius: 2px; margin-left: 5px; 
+      font-weight: 700; letter-spacing: 0; position: relative; top: -1px;
+    }
+
+    /* Nav Actions */
+    .nav-actions { display: flex; gap: 15px; align-items: center; }
+
+    .nav-btn {
+      background: transparent; color: var(--text-muted);
+      border: 1px solid var(--border); padding: 6px 12px;
+      font-family: inherit; font-size: 0.75rem; cursor: pointer;
+      transition: all 0.2s; text-decoration: none; display: flex; align-items: center; gap: 6px;
+    }
+    .nav-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+    
+    .connect-btn { color: var(--accent); border-color: var(--accent); }
+    .connect-btn:hover { background: var(--accent); color: #000; }
+    .connect-btn.connected { border-color: var(--border); color: var(--text-muted); }
+
+    /* --- LAYOUT --- */
+    .container {
+      display: grid; grid-template-columns: 1fr; gap: 25px;
+      width: 100%; max-width: 600px; padding: 0 20px;
+    }
+
+    @media(max-width: 650px) {
+        .navbar { flex-direction: column; gap: 15px; padding: 15px; }
+        .nav-actions { width: 100%; justify-content: center; gap: 10px; }
+        .container { padding: 0 15px; }
+    }
+
+    /* --- PANELS --- */
+    .panel {
+      background: var(--panel); border: 1px solid var(--border);
+      padding: 30px; position: relative; display: flex; flex-direction: column; align-items: center;
+      text-align: center;
+    }
+    .panel-header {
+      font-size: 1rem; color: var(--accent); margin-bottom: 25px;
+      text-transform: uppercase; letter-spacing: 2px; 
+      font-weight: 800;
+    }
+
+    /* --- FUEL SPECIFIC --- */
+    .faucet-icon {
+        font-size: 3rem; color: var(--accent); margin-bottom: 20px;
+        text-shadow: 0 0 20px var(--accent-dim);
+    }
+
+    .info-box {
+        background: #000; border: 1px dashed var(--border);
+        padding: 15px; margin-bottom: 20px; width: 100%;
+    }
+    
+    .stat-row {
+        display: flex; justify-content: space-between; margin-bottom: 8px;
+        font-size: 0.8rem;
+    }
+    .stat-label { color: var(--text-muted); }
+    .stat-val { color: #fff; font-weight: bold; }
+    .stat-val.highlight { color: var(--accent); }
+
+    /* --- ACTION BTN --- */
+    .deploy-btn {
+      width: 100%; background: var(--accent); color: #000; border: none;
+      padding: 16px; font-weight: 700; font-family: inherit; cursor: pointer;
+      text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;
+      font-size: 0.9rem; margin-top: 10px;
+    }
+    .deploy-btn:hover:not(:disabled) { box-shadow: 0 0 15px var(--accent-dim); transform: translateY(-1px); }
+    .deploy-btn:disabled { background: var(--border); color: #444; cursor: not-allowed; }
+
+    .status-text { margin-top: 20px; font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; min-height: 20px; justify-content: center;}
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #475569; }
+    .dot.active { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .dot.busy { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+    .dot.error { background: var(--error); box-shadow: 0 0 6px var(--error); }
+
+    .hidden { display: none; }
+    .contract-tag { font-size: 0.65rem; color: #444; margin-top: 30px; }
+
+  </style>
+</head>
+<body>
+
+  <div id="toast-container"></div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">
+        <div><span class="logo-main">FLOW</span><span class="logo-suffix">STABLE</span></div>
+        <span class="logo-tag">FUEL</span>
+    </div>
+    <div class="nav-actions">
+        
+        <button id="btnConnect" class="nav-btn connect-btn" onclick="connectWallet()">
+            [ Connect Wallet ]
+        </button>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTAINER -->
+  <div class="container">
+    
+    <div class="panel">
+      <div class="panel-header">:: Secure Fuel Station ::</div>
+      
+      <i class="fa-solid fa-gas-pump faucet-icon"></i>
+
+      <div style="margin-bottom: 25px; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
+         Get <strong>1 gUSDT</strong> for gas-less transactions on Stable Testnet.<br>
+         Requires signature verification.
+      </div>
+
+      <!-- Info Display -->
+      <div class="info-box">
+          <div class="stat-row">
+              <span class="stat-label">Wallet</span>
+              <span class="stat-val" id="dispAddress">Not Connected</span>
+          </div>
+          <div class="stat-row">
+              <span class="stat-label">Network</span>
+              <span class="stat-val" id="dispNetwork">--</span>
+          </div>
+          <div class="stat-row" style="margin-top: 10px; border-top: 1px solid #222; padding-top: 10px;">
+              <span class="stat-label">Claims Remaining</span>
+              <span class="stat-val highlight" id="dispClaims">-- / 5</span>
+          </div>
+      </div>
+
+      <button id="claimBtn" class="deploy-btn" onclick="signAndClaim()" disabled>
+        CONNECT WALLET FIRST
+      </button>
+      
+      <div class="status-text">
+        <div class="dot" id="statusDot"></div>
+        <span id="statusText">Waiting for connection...</span>
+      </div>
+
+    </div>
+
+  </div>
+
+<script>
+    // --- CONFIGURATION ---
+    const CHAIN_ID_HEX = '0x899'; // 2201
+    const CHAIN_ID_DEC = 2201;
+    const RPC_URL = 'https://rpc.testnet.stable.xyz';
+    const EXPLORER_BASE = 'https://testnet.stablescan.xyz';
+    
+    const FAUCET_CONTRACT_ADDRESS = "0xcA9bC39838a4FDAB8b6e9784C5f15726d8D42cf1";
+    const API_URL = "https://faucetstable.vercel.app/api/claim";
+
+    // ABI to Check Limits & Nonce
+    const FAUCET_ABI = [
+        "function nonces(address) view returns (uint256)",
+        "function claimCount(address) view returns (uint256)",
+        "function MAX_CLAIMS() view returns (uint256)"
+    ];
+
+    let provider, signer, userAddress;
+
+    // --- UI HELPERS ---
+    function setStatus(msg, type='normal') {
+        const t = document.getElementById('statusText');
+        const d = document.getElementById('statusDot');
+        t.innerText = msg;
+        d.className = 'dot'; // reset
+        if(type === 'busy') { t.style.color = 'var(--accent)'; d.classList.add('busy'); }
+        else if(type === 'success') { t.style.color = 'var(--success)'; d.classList.add('active'); }
+        else if(type === 'error') { t.style.color = 'var(--error)'; d.classList.add('error'); }
+        else { t.style.color = 'var(--text-muted)'; }
+    }
+
+    function showToast(msg, type='info') {
+        const box = document.getElementById('toast-container');
+        const el = document.createElement('div');
+        el.className = `toast ${type}`;
+        el.innerHTML = `<span>> ${msg}</span>`;
+        box.appendChild(el);
+        setTimeout(() => el.remove(), 4000);
+    }
+
+    // --- WALLET ---
+    async function connectWallet() {
+        if (!window.ethereum) return showToast("MetaMask not found!", "error");
+        try {
+            setStatus("Connecting...", "busy");
+            provider = new ethers.BrowserProvider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            signer = await provider.getSigner();
+            userAddress = await signer.getAddress();
+            
+            // UI Updates
+            const btn = document.getElementById('btnConnect');
+            btn.innerHTML = `[ ${userAddress.slice(0,6)}..${userAddress.slice(-4)} ]`;
+            btn.classList.add('connected');
+            document.getElementById('dispAddress').innerText = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+            
+            await checkAndSwitchNetwork();
+        } catch (err) { 
+            console.error(err);
+            setStatus("Connection failed", "error"); 
+        }
+    }
+
+    async function checkAndSwitchNetwork() {
+        const network = await provider.getNetwork();
+        const currentChainId = Number(network.chainId);
+        
+        if (currentChainId !== CHAIN_ID_DEC) {
+            document.getElementById('dispNetwork').innerText = "Wrong Network";
+            document.getElementById('dispNetwork').style.color = "var(--error)";
+            setStatus("Switching to Stable Testnet...", "busy");
+            
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: CHAIN_ID_HEX }],
+                });
+                // Recurse to confirm
+                window.location.reload(); 
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: CHAIN_ID_HEX,
+                                chainName: 'Stable Testnet',
+                                nativeCurrency: { name: 'gUSDT', symbol: 'gUSDT', decimals: 18 },
+                                rpcUrls: [RPC_URL],
+                                blockExplorerUrls: [EXPLORER_BASE]
+                            }],
+                        });
+                    } catch (addError) { setStatus("Failed to add network", "error"); }
+                } else { setStatus("Failed to switch network", "error"); }
+            }
+        } else { 
+            document.getElementById('dispNetwork').innerText = "Stable Testnet";
+            document.getElementById('dispNetwork').style.color = "var(--success)";
+            setStatus("Ready to Claim", "normal");
+            fetchClaimData();
+        }
+    }
+
+    async function fetchClaimData() {
+        try {
+            setStatus("Fetching usage limit...", "busy");
+            const contract = new ethers.Contract(FAUCET_CONTRACT_ADDRESS, FAUCET_ABI, signer);
+            
+            const count = await contract.claimCount(userAddress);
+            const max = await contract.MAX_CLAIMS();
+            const left = Number(max) - Number(count);
+            
+            document.getElementById('dispClaims').innerText = `${left} / ${max}`;
+            
+            const btn = document.getElementById('claimBtn');
+            if(left <= 0) {
+                btn.disabled = true;
+                btn.innerText = "LIMIT REACHED (0/5)";
+                setStatus("Limit Reached for this wallet", "error");
+            } else {
+                btn.disabled = false;
+                btn.innerText = "SIGN & CLAIM 1 gUSDT";
+                setStatus("System Ready", "success");
+            }
+        } catch(err) {
+            console.error(err);
+            setStatus("Error reading contract", "error");
+        }
+    }
+
+    // --- CLAIM LOGIC ---
+    async function signAndClaim() {
+        const btn = document.getElementById('claimBtn');
+        btn.disabled = true;
+        
+        try {
+            setStatus("Preparing Signature...", "busy");
+            
+            // 1. Get Nonce
+            const contract = new ethers.Contract(FAUCET_CONTRACT_ADDRESS, FAUCET_ABI, signer);
+            const nonce = await contract.nonces(userAddress);
+
+            // 2. Hash (Ethers v6 Syntax)
+            // abi.encodePacked(user, contract, chainId, nonce)
+            const messageHash = ethers.solidityPackedKeccak256(
+                ["address", "address", "uint256", "uint256"],
+                [userAddress, FAUCET_CONTRACT_ADDRESS, CHAIN_ID_DEC, nonce]
+            );
+
+            // 3. Sign (Ethers v6 Syntax requires getBytes for arrayify equivalent)
+            setStatus("Please Sign in Wallet...", "busy");
+            const signature = await signer.signMessage(ethers.getBytes(messageHash));
+
+            // 4. Send to Backend
+            setStatus("Verifying & Sending...", "busy");
+            btn.innerText = "PROCESSING...";
+
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userAddress, signature })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                setStatus("Claim Successful!", "success");
+                showToast("1 gUSDT Sent Successfully!", "success");
+                
+                // Show TX link
+                const txUrl = `${EXPLORER_BASE}/tx/${data.txHash}`;
+                document.getElementById('statusText').innerHTML = `Success! <a href="${txUrl}" target="_blank" style="color:var(--accent); margin-left:5px;">View TX</a>`;
+                
+                // Refresh limits
+                setTimeout(fetchClaimData, 4000);
+            } else {
+                throw new Error(data.error || "Server rejected request");
+            }
+
+        } catch (error) {
+            console.error(error);
+            setStatus("Failed", "error");
+            showToast(error.reason || error.message, "error");
+            btn.disabled = false;
+            btn.innerText = "TRY AGAIN";
+        }
+    }
+    
+    // Auto reload on chain change
+    if(window.ethereum) { window.ethereum.on('chainChanged', () => window.location.reload()); }
+</script>
+</body>
+</html>
