@@ -6,7 +6,6 @@
   <style>
     :root {
       --bg: #020617;
-      --bg-alt: #050816;
       --card: #050816;
       --border: #111827;
       --text: #e5e7eb;
@@ -14,7 +13,6 @@
       --accent: #22c55e;
       --accent-soft: rgba(34,197,94,0.12);
       --danger: #f97373;
-      --tab-bg: #020617;
     }
     * { box-sizing: border-box; }
     body {
@@ -26,13 +24,17 @@
     .mono {
       font-family: "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
+
+    /* HEADER / TOP BAR */
+
     header {
-      background: #000000;
+      background: #000;
       border-bottom: 1px solid #111827;
       padding: 10px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 10px;
     }
     .brand {
       display: flex;
@@ -51,6 +53,7 @@
       color: #020617;
       box-shadow: 0 0 14px rgba(34,197,94,0.7);
     }
+    .brand-stack { line-height: 1.1; }
     .brand-title {
       font-weight: 700;
       letter-spacing: 0.06em;
@@ -62,15 +65,48 @@
       text-transform: uppercase;
       letter-spacing: .15em;
     }
-    .brand-stack {
+
+    .search-wrap {
+      flex: 1;
+      max-width: 480px;
+      position: relative;
       display: flex;
-      flex-direction: column;
-      line-height: 1.1;
+      align-items: center;
+      gap: 6px;
     }
+    .search-wrap input {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: var(--text);
+      font-size: 13px;
+    }
+    .search-wrap input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(34,197,94,0.4);
+    }
+    .search-btn {
+      border-radius: 999px;
+      border: 1px solid #15803d;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #020617;
+      font-size: 13px;
+      padding: 7px 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .search-btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
     .top-right {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
       font-size: 12px;
       color: var(--muted);
     }
@@ -88,38 +124,21 @@
       border: 1px solid #1f2937;
       background: #020617;
     }
-    .search-wrap {
-      flex: 1;
-      margin: 0 32px;
-      max-width: 480px;
-      position: relative;
-    }
-    .search-wrap input {
-      width: 100%;
-      padding: 8px 34px 8px 12px;
-      border-radius: 999px;
-      border: 1px solid #1f2937;
-      background: #020617;
-      color: var(--text);
-      font-size: 13px;
-    }
-    .search-wrap input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(34,197,94,0.4);
-    }
-    .search-icon {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 14px;
-      color: var(--muted);
-    }
+
+    /* PAGE LAYOUT */
+
     .page {
       max-width: 1200px;
       margin: 18px auto 40px;
       padding: 0 16px 32px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 14px 45px rgba(0,0,0,0.6);
     }
     .section-title-main {
       font-size: 26px;
@@ -152,20 +171,6 @@
       font-size: 12px;
       color: var(--muted);
     }
-    .card {
-      background: var(--card);
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      padding: 14px 16px;
-      margin-bottom: 14px;
-      box-shadow: 0 14px 45px rgba(0,0,0,0.6);
-    }
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
     .addr-box {
       margin-top: 6px;
       padding: 6px 10px;
@@ -177,14 +182,12 @@
       gap: 8px;
       font-size: 13px;
     }
-    .addr-box span.mono {
-      font-size: 12px;
-    }
+
     .stats-row {
       display: grid;
       grid-template-columns: repeat(3, minmax(0,1fr));
       gap: 10px;
-      margin-top: 8px;
+      margin-top: 12px;
     }
     .stat-box {
       background: #020617;
@@ -214,29 +217,23 @@
       box-shadow: 0 0 10px rgba(34,197,94,0.9);
       margin-right: 6px;
     }
-    .tabs {
+
+    /* TOKEN TABLE */
+
+    .card-header {
       display: flex;
-      background: var(--tab-bg);
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .badge-small {
+      font-size: 10px;
+      padding: 2px 6px;
       border-radius: 999px;
-      padding: 2px;
-      margin-bottom: 10px;
-      border: 1px solid #111827;
-      width: fit-content;
+      border: 1px solid #1f2937;
+      background: #020617;
     }
-    .tab {
-      padding: 6px 14px;
-      font-size: 11px;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      border-radius: 999px;
-      cursor: pointer;
-      color: var(--muted);
-    }
-    .tab-active {
-      background: var(--accent-soft);
-      color: #bbf7d0;
-      box-shadow: 0 0 0 1px rgba(34,197,94,0.45);
-    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -267,13 +264,7 @@
       color: var(--muted);
       font-size: 12px;
     }
-    .badge-small {
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 999px;
-      border: 1px solid #1f2937;
-      background: #020617;
-    }
+
     .error {
       color: #fecaca;
       font-size: 12px;
@@ -284,20 +275,14 @@
       color: #a5b4fc;
       margin-top: 6px;
     }
+
     @media (max-width: 800px) {
       header {
         flex-wrap: wrap;
-        gap: 10px;
         padding: 10px 16px;
       }
-      .search-wrap {
-        order: 3;
-        margin: 10px 0 0;
-        max-width: 100%;
-      }
-      .stats-row {
-        grid-template-columns: 1fr;
-      }
+      .search-wrap { max-width: 100%; }
+      .stats-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -312,8 +297,8 @@
   </div>
 
   <div class="search-wrap">
-    <input id="addressInput" type="text" placeholder="Search Block / Tx / Address..." />
-    <div class="search-icon">⌕</div>
+    <input id="addressInput" type="text" placeholder="Search Address / Contract..." />
+    <button id="searchBtn" class="search-btn">Search</button>
   </div>
 
   <div class="top-right">
@@ -323,19 +308,17 @@
 </header>
 
 <div class="page">
+  <!-- BASIC INFO CARD -->
   <div class="card">
-    <div class="card-header">
-      <div>
-        <div class="section-title-main">Address</div>
-        <div id="addrTypePill" class="pill pill-eoa">EOA WALLET</div>
-      </div>
-    </div>
+    <div class="section-title-main">Address</div>
+    <div id="addrTypePill" class="pill pill-eoa">EOA WALLET</div>
+
     <div class="addr-box">
       <span class="muted">CURRENT</span>
       <span class="mono" id="addrDisplay">–</span>
     </div>
 
-    <div class="stats-row" style="margin-top:14px;">
+    <div class="stats-row">
       <div class="stat-box">
         <div class="stat-label">Native Balance</div>
         <div class="stat-value mono" id="balanceEth">–</div>
@@ -354,29 +337,22 @@
         <div class="muted">last activity in fetched range</div>
       </div>
     </div>
+
     <div id="stateText" class="loading" style="display:none;"></div>
     <div id="errorText" class="error" style="display:none;"></div>
   </div>
 
+  <!-- TOKEN TRANSFERS ONLY -->
   <div class="card">
-    <div class="tabs">
-      <div class="tab tab-active" data-tab="native">NATIVE TRANSACTIONS</div>
-      <div class="tab" data-tab="tokens">TOKEN TRANSFERS</div>
-    </div>
-
-    <div id="nativeTab" style="display:block;">
-      <div class="center-muted">
-        NO NATIVE TXS INDEXED<br/>
-        <span class="muted">Demo page shows token transfers only.</span>
+    <div class="card-header">
+      <div>
+        <span class="muted">TOKEN TRANSFERS</span>
+        <span class="badge-small mono">ERC20 · Transfer</span>
       </div>
     </div>
 
-    <div id="tokenTab" style="display:none;">
-      <div class="muted" style="margin-bottom:6px;">
-        Showing ERC-20 <span class="badge-small mono">Transfer</span> events (IN / OUT) for this address.
-      </div>
-      <table>
-        <thead>
+    <table>
+      <thead>
         <tr>
           <th>DIR</th>
           <th>TOKEN</th>
@@ -387,29 +363,36 @@
           <th>BLOCK</th>
           <th>TX HASH</th>
         </tr>
-        </thead>
-        <tbody id="tokenTbody"></tbody>
-      </table>
-    </div>
+      </thead>
+      <tbody id="tokenTbody"></tbody>
+    </table>
   </div>
 </div>
 
 <script>
+  // ---------- CONFIG ----------
   const RPC_URL = "https://omega-13.gateway.tenderly.co/3x99VRWFjyHzv9iT0LZED4";
   const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
   const tokenMetaCache = {};
 
+  // ---------- RPC ----------
   async function rpcCall(method, params) {
     const res = await fetch(RPC_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: Date.now(), method, params })
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: Date.now(),
+        method,
+        params
+      })
     });
     const json = await res.json();
     if (json.error) throw new Error(json.error.message || "RPC error");
     return json.result;
   }
 
+  // ---------- UTILS ----------
   function cleanAddress(addr) {
     if (!addr) return null;
     addr = addr.trim();
@@ -459,6 +442,7 @@
     return out;
   }
 
+  // ---------- BASIC INFO ----------
   async function detectBasicInfo(address) {
     const [code, balance, txCount] = await Promise.all([
       rpcCall("eth_getCode", [address, "latest"]),
@@ -483,6 +467,7 @@
     };
   }
 
+  // ---------- TOKEN META ----------
   async function fetchTokenMeta(tokenAddr) {
     const addr = tokenAddr.toLowerCase();
     if (tokenMetaCache[addr]) return tokenMetaCache[addr];
@@ -545,6 +530,7 @@
     return map;
   }
 
+  // ---------- TOKEN TRANSFERS ----------
   async function fetchTokenTransfers(address) {
     const topicAddr = toTopicAddress(address);
 
@@ -692,13 +678,14 @@
     }
   }
 
+  document.getElementById("searchBtn").addEventListener("click", handleLookup);
   document.getElementById("addressInput").addEventListener("keydown", e => {
     if (e.key === "Enter") handleLookup();
   });
 
-  const tabs = document.querySelectorAll(".tab");
-  const nativeTab = document.getElementById("nativeTab");
-  const tokenTab = document.getElementById("tokenTab");
-  tabs.forEach(tab => {
-    tab.addEventListener("click", () => {
-  
+  // test ke liye uncomment:
+  // document.getElementById("addressInput").value = "0xEb54DecAd30ABe99ca42a0eFc6E0c26d76C542f4";
+  // handleLookup();
+</script>
+</body>
+</html>
