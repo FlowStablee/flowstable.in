@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Address Lookup – Simple Explorer</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #050816;
+      color: #e5e7eb;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #111827;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      border: 1px solid #1f2937;
+    }
+    label {
+      font-size: 14px;
+      color: #9ca3af;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 14px;
+      margin-top: 4px;
+      box-sizing: border-box;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 1px #4f46e5;
+    }
+    button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .pill-eoa {
+      background: rgba(34,197,94,0.1);
+      color: #4ade80;
+      border: 1px solid rgba(34,197,94,0.4);
+    }
+    .pill-contract {
+      background: rgba(56,189,248,0.1);
+      color: #38bdf8;
+      border: 1px solid rgba(56,189,248,0.4);
+    }
+    .muted {
+      color: #9ca3af;
+      font-size: 12px;
+    }
+    .mono {
+      font-family: "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+    th, td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #1f2937;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      font-weight: 500;
+      color: #9ca3af;
+      white-space: nowrap;
+    }
+    tr:nth-child(even) td {
+      background: #020617;
+    }
+    .tag-in {
+      color: #4ade80;
+    }
+    .tag-out {
+      color: #f97373;
+    }
+    .error {
+      color: #fecaca;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+    .loading {
+      font-size: 13px;
+      color: #a5b4fc;
+      margin-top: 6px;
+    }
+    .section-title {
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+    a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .flex {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .chip {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid #374151;
+      color: #9ca3af;
+    }
+    @media (max-width: 768px) {
+      td, th {
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Address Lookup</h1>
+
+    <div class="card">
+      <label for="addressInput">Address (0x...)</label>
+      <input id="addressInput" type="text" placeholder="Paste any EOA or contract address" />
+      <button id="lookupBtn">Lookup</button>
+      <div id="stateText" class="loading" style="display:none;"></div>
+      <div id="errorText" class="error" style="display:none;"></div>
+    </div>
+
+    <div class="card" id="basicCard" style="display:none;">
+      <div class="section-title">Basic Info</div>
+      <div class="flex">
+        <div>
+          <div class="muted">Address</div>
+          <div class="mono" id="addrDisplay"></div>
+        </div>
+        <div>
+          <div class="muted">Type</div>
+          <span id="addrTypePill" class="pill pill-eoa">EOA</span>
+        </div>
+        <div>
+          <div class="muted">Balance (wei)</div>
+          <div class="mono" id="balanceWei">-</div>
+        </div>
+        <div>
+          <div class="muted">Balance (approx)</div>
+          <div class="mono" id="balanceEth">-</div>
+        </div>
+        <div>
+          <div class="muted">Tx Count</div>
+          <div class="mono" id="txCount">-</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="tokenCard" style="display:none;">
+      <div class="section-title">Token Transfers (IN / OUT)</div>
+      <div class="muted">
+        Fetched using <span class="mono">eth_getLogs</span> (may be slow for full history).
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Dir</th>
+            <th>Token</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Amount (assume 18d)</th>
+            <th>Raw Value</th>
+            <th>Block</th>
+            <th>Tx Hash</th>
+          </tr>
+        </thead>
+        <tbody id="tokenTbody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const RPC_URL = "https://omega-13.gateway.tenderly.co/3x99VRWFjyHzv9iT0LZED4";
+    const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+
+    async function rpcCall(method, params) {
+      const res = await fetch(RPC_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: Date.now(),
+          method,
+          params
+        })
+      });
+      const json = await res.json();
+      if (json.error) {
+        throw new Error(json.error.message || "RPC error");
+      }
+      return json.result;
+    }
+
+    function cleanAddress(addr) {
+      if (!addr) return null;
+      addr = addr.trim();
+      if (!addr.startsWith("0x")) addr = "0x" + addr;
+      if (addr.length !== 42) return null;
+      return addr.toLowerCase();
+    }
+
+    function toTopicAddress(addr) {
+      const clean = addr.replace(/^0x/, "").toLowerCase();
+      return "0x" + "0".repeat(64 - clean.length) + clean;
+    }
+
+    function hexToBigInt(hex) {
+      if (!hex) return 0n;
+      return BigInt(hex);
+    }
+
+    function hexToDecString(hex) {
+      try {
+        return hexToBigInt(hex).toString(10);
+      } catch {
+        return "-";
+      }
+    }
+
+    function format18Decimals(hex) {
+      try {
+        const v = hexToBigInt(hex);
+        const base = 10n ** 18n;
+        const whole = v / base;
+        const frac = v % base;
+        let fracStr = frac.toString().padStart(18, "0").replace(/0+$/, "");
+        return fracStr ? `${whole.toString()}.${fracStr}` : whole.toString();
+      } catch {
+        return "-";
+      }
+    }
+
+    function hexToNumber(hex) {
+      try {
+        return Number(BigInt(hex));
+      } catch {
+        return 0;
+      }
+    }
+
+    async function detectBasicInfo(address) {
+      const [code, balance, txCount] = await Promise.all([
+        rpcCall("eth_getCode", [address, "latest"]),
+        rpcCall("eth_getBalance", [address, "latest"]),
+        rpcCall("eth_getTransactionCount", [address, "latest"])
+      ]);
+
+      return {
+        isContract: code && code !== "0x",
+        balanceWei: hexToDecString(balance),
+        balanceEth: (() => {
+          try {
+            const v = hexToBigInt(balance);
+            const base = 10n ** 18n;
+            const whole = v / base;
+            const frac = v % base;
+            let fracStr = frac.toString().padStart(18, "0").replace(/0+$/, "");
+            return fracStr ? `${whole.toString()}.${fracStr}` : whole.toString();
+          } catch {
+            return "-";
+          }
+        })(),
+        txCount: hexToDecString(txCount)
+      };
+    }
+
+    async function fetchTokenTransfers(address) {
+      const topicAddr = toTopicAddress(address);
+
+      // Outgoing
+      const outLogs = await rpcCall("eth_getLogs", [{
+        fromBlock: "0x0",
+        toBlock: "latest",
+        topics: [
+          TRANSFER_TOPIC,
+          topicAddr
+        ]
+      }]);
+
+      // Incoming
+      const inLogs = await rpcCall("eth_getLogs", [{
+        fromBlock: "0x0",
+        toBlock: "latest",
+        topics: [
+          TRANSFER_TOPIC,
+          null,
+          topicAddr
+        ]
+      }]);
+
+      // Mark direction + merge
+      const mappedOut = outLogs.map(l => ({...l, _dir: "out"}));
+      const mappedIn  = inLogs.map(l => ({...l, _dir: "in"}));
+      const all = mappedOut.concat(mappedIn);
+
+      // Sort by blockNumber desc, then logIndex desc
+      all.sort((a, b) => {
+        const ba = hexToBigInt(a.blockNumber || "0x0");
+        const bb = hexToBigInt(b.blockNumber || "0x0");
+        if (ba > bb) return -1;
+        if (ba < bb) return 1;
+        const la = hexToBigInt(a.logIndex || "0x0");
+        const lb = hexToBigInt(b.logIndex || "0x0");
+        if (la > lb) return -1;
+        if (la < lb) return 1;
+        return 0;
+      });
+
+      return all;
+    }
+
+    function shorten(addr) {
+      if (!addr) return "";
+      addr = addr.toLowerCase();
+      return addr.slice(0, 6) + "..." + addr.slice(-4);
+    }
+
+    function topicToAddress(topic) {
+      if (!topic) return "";
+      const clean = topic.replace(/^0x/, "");
+      const addr = "0x" + clean.slice(24);
+      return addr.toLowerCase();
+    }
+
+    function renderTokenTransfers(logs, targetAddress) {
+      const tbody = document.getElementById("tokenTbody");
+      tbody.innerHTML = "";
+      if (!logs || logs.length === 0) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 8;
+        td.className = "muted";
+        td.textContent = "No token transfers found for this address.";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
+
+      logs.forEach(log => {
+        const tr = document.createElement("tr");
+
+        const dirCell = document.createElement("td");
+        dirCell.className = log._dir === "in" ? "tag-in" : "tag-out";
+        dirCell.textContent = log._dir === "in" ? "IN" : "OUT";
+        tr.appendChild(dirCell);
+
+        const tokenCell = document.createElement("td");
+        tokenCell.innerHTML = `<span class="mono">${shorten(log.address)}</span>`;
+        tr.appendChild(tokenCell);
+
+        const fromTopic = log.topics[1];
+        const toTopic   = log.topics[2];
+        const fromAddr  = fromTopic ? topicToAddress(fromTopic) : "";
+        const toAddr    = toTopic ? topicToAddress(toTopic) : "";
+
+        const fromCell = document.createElement("td");
+        fromCell.innerHTML = `<span class="mono">${shorten(fromAddr)}</span>`;
+        tr.appendChild(fromCell);
+
+        const toCell = document.createElement("td");
+        toCell.innerHTML = `<span class="mono">${shorten(toAddr)}</span>`;
+        tr.appendChild(toCell);
+
+        const amountCell = document.createElement("td");
+        amountCell.className = "mono";
+        amountCell.textContent = format18Decimals(log.data || "0x0");
+        tr.appendChild(amountCell);
+
+        const rawCell = document.createElement("td");
+        rawCell.className = "mono";
+        rawCell.textContent = hexToDecString(log.data || "0x0");
+        tr.appendChild(rawCell);
+
+        const blockCell = document.createElement("td");
+        blockCell.className = "mono";
+        blockCell.textContent = hexToDecString(log.blockNumber || "0x0");
+        tr.appendChild(blockCell);
+
+        const txCell = document.createElement("td");
+        txCell.className = "mono";
+        txCell.textContent = shorten(log.transactionHash || "");
+        tr.appendChild(txCell);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function handleLookup() {
+      const addrInput = document.getElementById("addressInput");
+      const errorText = document.getElementById("errorText");
+      const stateText = document.getElementById("stateText");
+      const lookupBtn = document.getElementById("lookupBtn");
+
+      const rawAddr = addrInput.value;
+      const address = cleanAddress(rawAddr);
+
+      errorText.style.display = "none";
+      stateText.style.display = "none";
+
+      if (!address) {
+        errorText.textContent = "Invalid address. Must be 0x + 40 hex chars.";
+        errorText.style.display = "block";
+        return;
+      }
+
+      lookupBtn.disabled = true;
+      stateText.textContent = "Loading basic info...";
+      stateText.style.display = "block";
+
+      try {
+        // Basic info
+        const basic = await detectBasicInfo(address);
+
+        document.getElementById("basicCard").style.display = "block";
+        document.getElementById("addrDisplay").textContent = address;
+        document.getElementById("balanceWei").textContent = basic.balanceWei;
+        document.getElementById("balanceEth").textContent = basic.balanceEth;
+        document.getElementById("txCount").textContent = basic.txCount;
+
+        const typePill = document.getElementById("addrTypePill");
+        if (basic.isContract) {
+          typePill.textContent = "CONTRACT";
+          typePill.className = "pill pill-contract";
+        } else {
+          typePill.textContent = "EOA";
+          typePill.className = "pill pill-eoa";
+        }
+
+        // Token transfers
+        stateText.textContent = "Fetching token transfers (may take some time)...";
+        const logs = await fetchTokenTransfers(address);
+        renderTokenTransfers(logs, address);
+        document.getElementById("tokenCard").style.display = "block";
+
+        stateText.style.display = "none";
+      } catch (e) {
+        console.error(e);
+        errorText.textContent = "Error: " + (e.message || "Unknown error");
+        errorText.style.display = "block";
+        stateText.style.display = "none";
+      } finally {
+        lookupBtn.disabled = false;
+      }
+    }
+
+    document.getElementById("lookupBtn").addEventListener("click", handleLookup);
+    document.getElementById("addressInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        handleLookup();
+      }
+    });
+  </script>
+</body>
+</html>
