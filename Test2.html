@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>STABLE EXPLORER – Address</title>
+  <style>
+    :root {
+      --bg: #020617;
+      --bg-alt: #050816;
+      --card: #050816;
+      --border: #111827;
+      --text: #e5e7eb;
+      --muted: #6b7280;
+      --accent: #22c55e;
+      --accent-soft: rgba(34,197,94,0.12);
+      --danger: #f97373;
+      --tab-bg: #020617;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
+      color: var(--text);
+    }
+    .mono {
+      font-family: "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    header {
+      background: #000000;
+      border-bottom: 1px solid #111827;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: radial-gradient(circle at 20% 0, #22c55e, #16a34a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #020617;
+      box-shadow: 0 0 14px rgba(34,197,94,0.7);
+    }
+    .brand-title {
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      font-size: 16px;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .15em;
+    }
+    .brand-stack {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 8px rgba(34,197,94,0.9);
+      margin-right: 4px;
+    }
+    .chip {
+      border-radius: 999px;
+      padding: 2px 10px;
+      border: 1px solid #1f2937;
+      background: #020617;
+    }
+    .search-wrap {
+      flex: 1;
+      margin: 0 32px;
+      max-width: 480px;
+      position: relative;
+    }
+    .search-wrap input {
+      width: 100%;
+      padding: 8px 34px 8px 12px;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: var(--text);
+      font-size: 13px;
+    }
+    .search-wrap input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(34,197,94,0.4);
+    }
+    .search-icon {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .page {
+      max-width: 1200px;
+      margin: 18px auto 40px;
+      padding: 0 16px 32px;
+    }
+    .section-title-main {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      margin-bottom: 6px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      border: 1px solid rgba(148,163,184,0.5);
+      color: #e5e7eb;
+    }
+    .pill-eoa {
+      background: rgba(34,197,94,0.05);
+      border-color: rgba(34,197,94,0.5);
+      color: #bbf7d0;
+    }
+    .pill-contract {
+      background: rgba(56,189,248,0.08);
+      border-color: rgba(56,189,248,0.6);
+      color: #bae6fd;
+    }
+    .muted {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 14px 45px rgba(0,0,0,0.6);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .addr-box {
+      margin-top: 6px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: #020617;
+      border: 1px dashed #1f2937;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .addr-box span.mono {
+      font-size: 12px;
+    }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .stat-box {
+      background: #020617;
+      border-radius: 12px;
+      border: 1px solid #111827;
+      padding: 10px 12px;
+      min-height: 70px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .stat-label {
+      font-size: 11px;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(34,197,94,0.9);
+      margin-right: 6px;
+    }
+    .tabs {
+      display: flex;
+      background: var(--tab-bg);
+      border-radius: 999px;
+      padding: 2px;
+      margin-bottom: 10px;
+      border: 1px solid #111827;
+      width: fit-content;
+    }
+    .tab {
+      padding: 6px 14px;
+      font-size: 11px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .tab-active {
+      background: var(--accent-soft);
+      color: #bbf7d0;
+      box-shadow: 0 0 0 1px rgba(34,197,94,0.45);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: 6px;
+    }
+    th, td {
+      padding: 7px 6px;
+      text-align: left;
+      border-bottom: 1px solid #111827;
+    }
+    th {
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+    tbody tr:nth-child(even) td {
+      background: #020617;
+    }
+    .tag-in { color: var(--accent); }
+    .tag-out { color: var(--danger); }
+    .center-muted {
+      text-align: center;
+      padding: 20px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .badge-small {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      background: #020617;
+    }
+    .error {
+      color: #fecaca;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+    .loading {
+      font-size: 12px;
+      color: #a5b4fc;
+      margin-top: 6px;
+    }
+    @media (max-width: 800px) {
+      header {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 10px 16px;
+      }
+      .search-wrap {
+        order: 3;
+        margin: 10px 0 0;
+        max-width: 100%;
+      }
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="brand-icon">></div>
+    <div class="brand-stack">
+      <div class="brand-title">STABLE EXPLORER</div>
+      <div class="brand-sub">POWERED BY FLOWSTABLE</div>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <input id="addressInput" type="text" placeholder="Search Block / Tx / Address..." />
+    <div class="search-icon">⌕</div>
+  </div>
+
+  <div class="top-right">
+    <span class="chip"><span class="badge-dot"></span> MAINNET_LIVE</span>
+    <span class="chip mono">RPC</span>
+  </div>
+</header>
+
+<div class="page">
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="section-title-main">Address</div>
+        <div id="addrTypePill" class="pill pill-eoa">EOA WALLET</div>
+      </div>
+    </div>
+    <div class="addr-box">
+      <span class="muted">CURRENT</span>
+      <span class="mono" id="addrDisplay">–</span>
+    </div>
+
+    <div class="stats-row" style="margin-top:14px;">
+      <div class="stat-box">
+        <div class="stat-label">Native Balance</div>
+        <div class="stat-value mono" id="balanceEth">–</div>
+        <div class="muted mono" id="balanceWei">wei</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Transaction Count</div>
+        <div class="stat-value mono" id="txCount">–</div>
+        <div class="muted">Total Nonce</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Account Status</div>
+        <div class="stat-value">
+          <span class="status-dot"></span>ACTIVE
+        </div>
+        <div class="muted">last activity in fetched range</div>
+      </div>
+    </div>
+    <div id="stateText" class="loading" style="display:none;"></div>
+    <div id="errorText" class="error" style="display:none;"></div>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <div class="tab tab-active" data-tab="native">NATIVE TRANSACTIONS</div>
+      <div class="tab" data-tab="tokens">TOKEN TRANSFERS</div>
+    </div>
+
+    <div id="nativeTab" style="display:block;">
+      <div class="center-muted">
+        NO NATIVE TXS INDEXED<br/>
+        <span class="muted">Demo page shows token transfers only.</span>
+      </div>
+    </div>
+
+    <div id="tokenTab" style="display:none;">
+      <div class="muted" style="margin-bottom:6px;">
+        Showing ERC-20 <span class="badge-small mono">Transfer</span> events (IN / OUT) for this address.
+      </div>
+      <table>
+        <thead>
+        <tr>
+          <th>DIR</th>
+          <th>TOKEN</th>
+          <th>FROM</th>
+          <th>TO</th>
+          <th>AMOUNT</th>
+          <th>RAW VALUE</th>
+          <th>BLOCK</th>
+          <th>TX HASH</th>
+        </tr>
+        </thead>
+        <tbody id="tokenTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const RPC_URL = "https://omega-13.gateway.tenderly.co/3x99VRWFjyHzv9iT0LZED4";
+  const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+  const tokenMetaCache = {};
+
+  async function rpcCall(method, params) {
+    const res = await fetch(RPC_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: Date.now(), method, params })
+    });
+    const json = await res.json();
+    if (json.error) throw new Error(json.error.message || "RPC error");
+    return json.result;
+  }
+
+  function cleanAddress(addr) {
+    if (!addr) return null;
+    addr = addr.trim();
+    if (!addr.startsWith("0x")) addr = "0x" + addr;
+    if (addr.length !== 42) return null;
+    return addr.toLowerCase();
+  }
+  function toTopicAddress(addr) {
+    const clean = addr.replace(/^0x/, "").toLowerCase();
+    return "0x" + "0".repeat(64 - clean.length) + clean;
+  }
+  function hexToBigInt(hex) {
+    if (!hex) return 0n;
+    return BigInt(hex);
+  }
+  function hexToDecString(hex) {
+    try { return hexToBigInt(hex).toString(10); } catch { return "-"; }
+  }
+  function formatWithDecimals(hex, decimals) {
+    try {
+      const v = hexToBigInt(hex);
+      const base = 10n ** BigInt(decimals);
+      const whole = v / base;
+      const frac = v % base;
+      let fracStr = frac.toString().padStart(decimals, "0").replace(/0+$/, "");
+      return fracStr ? `${whole.toString()}.${fracStr}` : whole.toString();
+    } catch { return "-"; }
+  }
+  function topicToAddress(topic) {
+    if (!topic) return "";
+    const clean = topic.replace(/^0x/, "");
+    return "0x" + clean.slice(24);
+  }
+  function shorten(addr) {
+    if (!addr) return "";
+    addr = addr.toLowerCase();
+    return addr.slice(0, 6) + "..." + addr.slice(-4);
+  }
+  function hexToAscii(hex) {
+    hex = hex.replace(/^0x/, "");
+    let out = "";
+    for (let i = 0; i < hex.length; i += 2) {
+      const code = parseInt(hex.slice(i, i + 2), 16);
+      if (code === 0) continue;
+      out += String.fromCharCode(code);
+    }
+    return out;
+  }
+
+  async function detectBasicInfo(address) {
+    const [code, balance, txCount] = await Promise.all([
+      rpcCall("eth_getCode", [address, "latest"]),
+      rpcCall("eth_getBalance", [address, "latest"]),
+      rpcCall("eth_getTransactionCount", [address, "latest"])
+    ]);
+    const balanceWei = hexToDecString(balance);
+    let balanceEth = "-";
+    try {
+      const v = hexToBigInt(balance);
+      const base = 10n ** 18n;
+      const whole = v / base;
+      const frac = v % base;
+      let fracStr = frac.toString().padStart(18, "0").replace(/0+$/, "");
+      balanceEth = fracStr ? `${whole.toString()}.${fracStr}` : whole.toString();
+    } catch {}
+    return {
+      isContract: code && code !== "0x",
+      balanceWei,
+      balanceEth,
+      txCount: hexToDecString(txCount)
+    };
+  }
+
+  async function fetchTokenMeta(tokenAddr) {
+    const addr = tokenAddr.toLowerCase();
+    if (tokenMetaCache[addr]) return tokenMetaCache[addr];
+
+    const callBase = { to: addr };
+    async function callHex(data) {
+      return rpcCall("eth_call", [{ ...callBase, data }, "latest"]);
+    }
+
+    let symbol = "UNK";
+    let name = "";
+    let decimals = 18;
+
+    try {
+      const symRaw = await callHex("0x95d89b41"); // symbol()
+      const sHex = symRaw.replace(/^0x/, "");
+      if (sHex.length >= 128) {
+        const len = parseInt(sHex.slice(64, 128), 16);
+        const strHex = sHex.slice(128, 128 + len * 2);
+        symbol = hexToAscii(strHex) || "UNK";
+      } else {
+        symbol = hexToAscii(sHex) || "UNK";
+      }
+    } catch {}
+
+    try {
+      const nameRaw = await callHex("0x06fdde03"); // name()
+      const nHex = nameRaw.replace(/^0x/, "");
+      if (nHex.length >= 128) {
+        const len = parseInt(nHex.slice(64, 128), 16);
+        const strHex = nHex.slice(128, 128 + len * 2);
+        name = hexToAscii(strHex) || "";
+      } else {
+        name = hexToAscii(nHex) || "";
+      }
+    } catch {}
+
+    try {
+      const decRaw = await callHex("0x313ce567"); // decimals()
+      decimals = parseInt(decRaw, 16);
+      if (!Number.isFinite(decimals) || decimals < 0 || decimals > 36) decimals = 18;
+    } catch {}
+
+    const meta = { symbol, name, decimals };
+    tokenMetaCache[addr] = meta;
+    return meta;
+  }
+
+  async function loadTokenMetaForLogs(logs) {
+    const unique = new Set();
+    logs.forEach(l => {
+      if (l.address) unique.add(l.address.toLowerCase());
+    });
+    const map = {};
+    const promises = [];
+    unique.forEach(addr => {
+      promises.push(fetchTokenMeta(addr).then(m => { map[addr] = m; }).catch(() => {}));
+    });
+    await Promise.all(promises);
+    return map;
+  }
+
+  async function fetchTokenTransfers(address) {
+    const topicAddr = toTopicAddress(address);
+
+    const outLogs = await rpcCall("eth_getLogs", [{
+      fromBlock: "0x0",
+      toBlock: "latest",
+      topics: [TRANSFER_TOPIC, topicAddr]
+    }]);
+
+    const inLogs = await rpcCall("eth_getLogs", [{
+      fromBlock: "0x0",
+      toBlock: "latest",
+      topics: [TRANSFER_TOPIC, null, topicAddr]
+    }]);
+
+    const mappedOut = outLogs.map(l => ({ ...l, _dir: "out" }));
+    const mappedIn  = inLogs.map(l => ({ ...l, _dir: "in" }));
+    const all = mappedOut.concat(mappedIn);
+
+    all.sort((a, b) => {
+      const ba = hexToBigInt(a.blockNumber || "0x0");
+      const bb = hexToBigInt(b.blockNumber || "0x0");
+      if (ba > bb) return -1;
+      if (ba < bb) return 1;
+      const la = hexToBigInt(a.logIndex || "0x0");
+      const lb = hexToBigInt(b.logIndex || "0x0");
+      if (la > lb) return -1;
+      if (la < lb) return 1;
+      return 0;
+    });
+
+    return all;
+  }
+
+  function renderTokenTransfers(logs, metaMap) {
+    const tbody = document.getElementById("tokenTbody");
+    tbody.innerHTML = "";
+    if (!logs || logs.length === 0) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 8;
+      td.className = "center-muted";
+      td.textContent = "No token transfers found in current range.";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    logs.forEach(log => {
+      const tr = document.createElement("tr");
+
+      const dirCell = document.createElement("td");
+      dirCell.className = log._dir === "in" ? "tag-in" : "tag-out";
+      dirCell.textContent = log._dir === "in" ? "IN" : "OUT";
+      tr.appendChild(dirCell);
+
+      const tokenMeta = metaMap[log.address.toLowerCase()] || { symbol: "UNK", name: "", decimals: 18 };
+      const tokenCell = document.createElement("td");
+      tokenCell.innerHTML =
+        `<span class="mono">${shorten(log.address)}</span><br>` +
+        `<span class="muted">${tokenMeta.symbol}${tokenMeta.name ? " · " + tokenMeta.name : ""}</span>`;
+      tr.appendChild(tokenCell);
+
+      const fromAddr = topicToAddress(log.topics[1]);
+      const toAddr   = topicToAddress(log.topics[2]);
+
+      const fromCell = document.createElement("td");
+      fromCell.innerHTML = `<span class="mono">${shorten(fromAddr)}</span>`;
+      tr.appendChild(fromCell);
+
+      const toCell = document.createElement("td");
+      toCell.innerHTML = `<span class="mono">${shorten(toAddr)}</span>`;
+      tr.appendChild(toCell);
+
+      const amountCell = document.createElement("td");
+      amountCell.className = "mono";
+      amountCell.textContent = formatWithDecimals(log.data || "0x0", tokenMeta.decimals);
+      tr.appendChild(amountCell);
+
+      const rawCell = document.createElement("td");
+      rawCell.className = "mono";
+      rawCell.textContent = hexToDecString(log.data || "0x0");
+      tr.appendChild(rawCell);
+
+      const blockCell = document.createElement("td");
+      blockCell.className = "mono";
+      blockCell.textContent = hexToDecString(log.blockNumber || "0x0");
+      tr.appendChild(blockCell);
+
+      const txCell = document.createElement("td");
+      txCell.className = "mono";
+      txCell.textContent = shorten(log.transactionHash || "");
+      tr.appendChild(txCell);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  const errorText = document.getElementById("errorText");
+  const stateText = document.getElementById("stateText");
+
+  async function handleLookup() {
+    const addrInput = document.getElementById("addressInput");
+    const address = cleanAddress(addrInput.value);
+
+    errorText.style.display = "none";
+    stateText.style.display = "none";
+
+    if (!address) {
+      errorText.textContent = "Invalid address. Must be 0x + 40 hex chars.";
+      errorText.style.display = "block";
+      return;
+    }
+
+    document.getElementById("addrDisplay").textContent = address;
+
+    try {
+      stateText.textContent = "Loading basic info...";
+      stateText.style.display = "block";
+
+      const basic = await detectBasicInfo(address);
+      document.getElementById("balanceWei").textContent = basic.balanceWei + " wei";
+      document.getElementById("balanceEth").textContent = basic.balanceEth + " GUSDT";
+      document.getElementById("txCount").textContent = basic.txCount;
+
+      const typePill = document.getElementById("addrTypePill");
+      if (basic.isContract) {
+        typePill.textContent = "CONTRACT";
+        typePill.className = "pill pill-contract";
+      } else {
+        typePill.textContent = "EOA WALLET";
+        typePill.className = "pill pill-eoa";
+      }
+
+      stateText.textContent = "Fetching token transfers + token metadata...";
+      const logs = await fetchTokenTransfers(address);
+      const metaMap = await loadTokenMetaForLogs(logs);
+      renderTokenTransfers(logs, metaMap);
+      stateText.style.display = "none";
+    } catch (e) {
+      console.error(e);
+      errorText.textContent = "Error: " + (e.message || "Unknown error");
+      errorText.style.display = "block";
+      stateText.style.display = "none";
+    }
+  }
+
+  document.getElementById("addressInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") handleLookup();
+  });
+
+  const tabs = document.querySelectorAll(".tab");
+  const nativeTab = document.getElementById("nativeTab");
+  const tokenTab = document.getElementById("tokenTab");
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+  
